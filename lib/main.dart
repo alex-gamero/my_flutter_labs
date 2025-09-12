@@ -30,16 +30,38 @@ class MyHomePage extends StatefulWidget {
 }
 
 class _MyHomePageState extends State<MyHomePage> {
-  double _counter = 0;
   var myFontSize = 30.0;
+  var fileToShow = "images/question-mark.png";
+  late TextEditingController _controller; //late means promise to initialize it later
+  var _login = TextEditingController();
 
-  void _incrementCounter() {
-    if(_counter <= 99.0) {
-      setState(() {
-        _counter++;
-        myFontSize++;
-      });
-    }
+
+  //you're visible
+  @override
+  void initState() {
+    super.initState();
+    _controller = TextEditingController(); //doing your promise to initialize
+  }
+
+  //you are being removed
+  @override
+  void dispose() {
+    super.dispose();
+    //free memory:
+    _controller.dispose();
+  }
+
+  //you're visible
+  void initStateLogin() {
+    super.initState();
+    _login = TextEditingController(); //doing your promise to initialize
+  }
+
+  //you are being removed
+  void disposeLogin() {
+    super.dispose();
+    //free memory:
+    _login.dispose();
   }
 
   @override
@@ -55,33 +77,56 @@ class _MyHomePageState extends State<MyHomePage> {
           children: <Widget>[
 
 
-            Text('You have pushed the button this many times:',
-              style: TextStyle(fontSize: myFontSize)
+            Padding(child:
+            TextField(controller: _login, decoration:
+            InputDecoration(
+                border: OutlineInputBorder(),
+                hintText:"Login",
+                labelText: "Login"
+
+            ) ),
+              padding: EdgeInsets.fromLTRB(50, 0, 50, 0)
             ),
 
+            Padding(child:
+            TextField(controller: _controller, decoration:
+            InputDecoration(
+                border: OutlineInputBorder(),
+                hintText:"Password",
+                labelText: "Password"
 
-            Text(
-              '$_counter',
-              style: TextStyle(fontSize: myFontSize),
             ),
-            Slider(value: _counter, min: 0, max: 100, onChanged: setNewValue)
+                obscureText: true
+            ),
+                padding: EdgeInsets.fromLTRB(50, 0, 50, 0)
+            ),
+
+            ElevatedButton(onPressed: () { //paste the text written
+              setState((){
+
+                var txt = _controller.value.text;
+                setState(() {
+                  if(txt == "QWERTY123"){
+                    fileToShow = "images/idea.png";
+                  }
+                  else {
+                    fileToShow = "images/stop.png";
+                  }
+                });
+
+              });
+
+            } //<-- Lambda, or anonymous function
+                , child: Text("Login")),
+
+            Semantics(child: Image.asset(fileToShow, height:100, width:100))
+
+
 
           ],
         ),
       ),
-      floatingActionButton: FloatingActionButton(
-        onPressed: _incrementCounter,
-        tooltip: 'Increment',
-        child: const Icon(Icons.add),
-      ),
     );
-  }
-
-  void setNewValue(double num){
-    setState(() {
-      _counter = num;
-      myFontSize = num;
-    });
   }
 
 }
