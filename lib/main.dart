@@ -51,19 +51,6 @@ class _MyHomePageState extends State<MyHomePage> {
     _controller.dispose();
   }
 
-  //you're visible
-  void initStateLogin() {
-    super.initState();
-    _login = TextEditingController(); //doing your promise to initialize
-  }
-
-  //you are being removed
-  void disposeLogin() {
-    super.dispose();
-    //free memory:
-    _login.dispose();
-  }
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(
