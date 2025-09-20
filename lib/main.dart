@@ -37,16 +37,20 @@ class _MyHomePageState extends State<MyHomePage> {
     return Scaffold(
       body: Center(
         child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
           children: <Widget>[
 
-            Text("BROWSE CATEGORIES", style: TextStyle(fontSize: 35.0, fontWeight: FontWeight.bold)),
+            Text("BROWSE CATEGORIES", style: TextStyle(fontSize: 25.0, fontWeight: FontWeight.bold)),
             Text("\n", style: TextStyle(fontSize: 8.0, fontWeight: FontWeight.bold)),
 
-            Text("Not sure about exactly which recipe you're looking for? Do a search, or dive into our most popular categories", style: TextStyle(fontSize: 15.0)),
-            Text("\n", style: TextStyle(fontSize: 11.0, fontWeight: FontWeight.bold)),
+            Padding(padding: EdgeInsets.fromLTRB(15, 0, 0, 0),
+            child:
+            Text("Not sure about exactly which recipe you're looking for? Do a search, or dive into our most popular categories", style: TextStyle(fontSize: 13.0)),
+            ),
 
-            Text("BY MEAT", style: TextStyle(fontSize: 25.0, fontWeight: FontWeight.bold)),
-            Text("\n", style: TextStyle(fontSize: 7.0, fontWeight: FontWeight.bold)),
+            Text("\n", style: TextStyle(fontSize: 11.0, fontWeight: FontWeight.bold)),
+            Text("BY MEAT", style: TextStyle(fontSize: 22.0, fontWeight: FontWeight.bold)),
+            Text("\n", style: TextStyle(fontSize: 2.0, fontWeight: FontWeight.bold)),
 
             Row(
               crossAxisAlignment:CrossAxisAlignment.center,
@@ -59,9 +63,9 @@ class _MyHomePageState extends State<MyHomePage> {
                   children: <Widget>[
                     CircleAvatar(
                         backgroundImage: AssetImage('images/beef.jpg'),
-                        radius:80
+                        radius:48
                     ),
-                    Text("BEEF", style: TextStyle(fontSize: 25.0, color: Colors.white))
+                    Text("BEEF", style: TextStyle(fontSize: 20.0, color: Colors.white, fontWeight: FontWeight.bold))
                   ],
                 ),
                 Stack(
@@ -69,9 +73,9 @@ class _MyHomePageState extends State<MyHomePage> {
                   children: <Widget>[
                     CircleAvatar(
                         backgroundImage: AssetImage('images/chicken.jpg'),
-                        radius:80
+                        radius:48
                     ),
-                    Text("CHICKEN", style: TextStyle(fontSize: 25.0, color: Colors.white ))
+                    Text("CHICKEN", style: TextStyle(fontSize: 20.0, color: Colors.white, fontWeight: FontWeight.bold))
                   ],
                 ),
                 Stack(
@@ -79,9 +83,9 @@ class _MyHomePageState extends State<MyHomePage> {
                   children: <Widget>[
                     CircleAvatar(
                         backgroundImage: AssetImage('images/pork.jpg'),
-                        radius:80
+                        radius:48
                     ),
-                    Text("PORK", style: TextStyle(fontSize: 25.0, color: Colors.white ))
+                    Text("PORK", style: TextStyle(fontSize: 20.0, color: Colors.white, fontWeight: FontWeight.bold))
                   ],
                 ),
                 Stack(
@@ -89,9 +93,9 @@ class _MyHomePageState extends State<MyHomePage> {
                   children: <Widget>[
                     CircleAvatar(
                         backgroundImage: AssetImage('images/seafood.jpg'),
-                        radius:80
+                        radius:48
                     ),
-                    Text("SEAFOOD", style: TextStyle(fontSize: 25.0, color: Colors.white ))
+                    Text("SEAFOOD", style: TextStyle(fontSize: 20.0, color: Colors.white, fontWeight: FontWeight.bold))
                   ],
                 )
 
@@ -100,8 +104,8 @@ class _MyHomePageState extends State<MyHomePage> {
             ),
 
             Text("\n", style: TextStyle(fontSize: 11.0, fontWeight: FontWeight.bold)),
-            Text("BY COURSE", style: TextStyle(fontSize: 25.0, fontWeight: FontWeight.bold)),
-            Text("\n", style: TextStyle(fontSize: 7.0, fontWeight: FontWeight.bold)),
+            Text("BY COURSE", style: TextStyle(fontSize: 22.0, fontWeight: FontWeight.bold)),
+            Text("\n", style: TextStyle(fontSize: 2.0, fontWeight: FontWeight.bold)),
 
             Row(
                 crossAxisAlignment:CrossAxisAlignment.center,
@@ -114,10 +118,10 @@ class _MyHomePageState extends State<MyHomePage> {
                     children: <Widget>[
                       CircleAvatar(
                           backgroundImage: AssetImage('images/main.jpg'),
-                          radius:80
+                          radius:48
                       ),
                       Text("\n", style: TextStyle(fontSize: 2.0, fontWeight: FontWeight.bold)),
-                      Text("Main Dishes", style: TextStyle(fontSize: 20.0))
+                      Text("Main Dishes", style: TextStyle(fontSize: 13.0, fontWeight: FontWeight.bold))
                     ],
                   ),
                   Column(
@@ -125,10 +129,10 @@ class _MyHomePageState extends State<MyHomePage> {
                     children: <Widget>[
                       CircleAvatar(
                           backgroundImage: AssetImage('images/salad.jpg'),
-                          radius:80
+                          radius:48
                       ),
                       Text("\n", style: TextStyle(fontSize: 2.0, fontWeight: FontWeight.bold)),
-                      Text("Salad Recipes", style: TextStyle(fontSize: 20.0))
+                      Text("Salad Recipes", style: TextStyle(fontSize: 13.0, fontWeight: FontWeight.bold))
                     ],
                   ),
                   Column(
@@ -136,10 +140,10 @@ class _MyHomePageState extends State<MyHomePage> {
                     children: <Widget>[
                       CircleAvatar(
                           backgroundImage: AssetImage('images/side.jpg'),
-                          radius:80
+                          radius:48
                       ),
                       Text("\n", style: TextStyle(fontSize: 2.0, fontWeight: FontWeight.bold)),
-                      Text("Side Dishes", style: TextStyle(fontSize: 20.0))
+                      Text("Side Dishes", style: TextStyle(fontSize: 13.0, fontWeight: FontWeight.bold))
                     ],
                   ),
                   Column(
@@ -147,10 +151,10 @@ class _MyHomePageState extends State<MyHomePage> {
                     children: <Widget>[
                       CircleAvatar(
                           backgroundImage: AssetImage('images/pot.jpg'),
-                          radius:80
+                          radius:48
                       ),
                       Text("\n", style: TextStyle(fontSize: 2.0, fontWeight: FontWeight.bold)),
-                      Text("Crockpot", style: TextStyle(fontSize: 20.0))
+                      Text("Crockpot", style: TextStyle(fontSize: 13.0, fontWeight: FontWeight.bold))
                     ],
                   )
 
@@ -159,8 +163,8 @@ class _MyHomePageState extends State<MyHomePage> {
             ),
 
             Text("\n", style: TextStyle(fontSize: 11.0, fontWeight: FontWeight.bold)),
-            Text("BY DESSERT", style: TextStyle(fontSize: 25.0, fontWeight: FontWeight.bold)),
-            Text("\n", style: TextStyle(fontSize: 7.0, fontWeight: FontWeight.bold)),
+            Text("BY DESSERT", style: TextStyle(fontSize: 22.0, fontWeight: FontWeight.bold)),
+            Text("\n", style: TextStyle(fontSize: 2.0, fontWeight: FontWeight.bold)),
 
             Row(
                 crossAxisAlignment:CrossAxisAlignment.center,
@@ -173,10 +177,10 @@ class _MyHomePageState extends State<MyHomePage> {
                     children: <Widget>[
                       CircleAvatar(
                           backgroundImage: AssetImage('images/ice.jpg'),
-                          radius:80
+                          radius:48
                       ),
                       Text("\n", style: TextStyle(fontSize: 2.0, fontWeight: FontWeight.bold)),
-                      Text("Ice Cream", style: TextStyle(fontSize: 20.0))
+                      Text("Ice Cream", style: TextStyle(fontSize: 13.0, fontWeight: FontWeight.bold))
                     ],
                   ),
                   Column(
@@ -184,10 +188,10 @@ class _MyHomePageState extends State<MyHomePage> {
                     children: <Widget>[
                       CircleAvatar(
                           backgroundImage: AssetImage('images/brownies.jpg'),
-                          radius:80
+                          radius:48
                       ),
                       Text("\n", style: TextStyle(fontSize: 2.0, fontWeight: FontWeight.bold)),
-                      Text("Brownies", style: TextStyle(fontSize: 20.0))
+                      Text("Brownies", style: TextStyle(fontSize: 13.0, fontWeight: FontWeight.bold))
                     ],
                   ),
                   Column(
@@ -195,10 +199,10 @@ class _MyHomePageState extends State<MyHomePage> {
                     children: <Widget>[
                       CircleAvatar(
                           backgroundImage: AssetImage('images/pie.jpg'),
-                          radius:80
+                          radius:48
                       ),
                       Text("\n", style: TextStyle(fontSize: 2.0, fontWeight: FontWeight.bold)),
-                      Text("Pies", style: TextStyle(fontSize: 20.0))
+                      Text("Pies", style: TextStyle(fontSize: 13.0, fontWeight: FontWeight.bold))
                     ],
                   ),
                   Column(
@@ -206,10 +210,10 @@ class _MyHomePageState extends State<MyHomePage> {
                     children: <Widget>[
                       CircleAvatar(
                           backgroundImage: AssetImage('images/cookies.jpg'),
-                          radius:80
+                          radius:48
                       ),
                       Text("\n", style: TextStyle(fontSize: 2.0, fontWeight: FontWeight.bold)),
-                      Text("Cookies", style: TextStyle(fontSize: 20.0))
+                      Text("Cookies", style: TextStyle(fontSize: 13.0, fontWeight: FontWeight.bold))
                     ],
                   )
 
