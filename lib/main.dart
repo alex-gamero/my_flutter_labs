@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:encrypted_shared_preferences/encrypted_shared_preferences.dart';
 
 void main() {
   runApp(const MyApp());
@@ -10,12 +11,12 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: 'Flutter Demo',
+      title: 'Week4 Lab',
       theme: ThemeData(
 
         colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
       ),
-      home: const MyHomePage(title: 'Flutter Demo Home Page'),
+      home: const MyHomePage(title: 'Login Page'),
     );
   }
 }
@@ -30,27 +31,81 @@ class MyHomePage extends StatefulWidget {
 }
 
 class _MyHomePageState extends State<MyHomePage> {
-  var myFontSize = 30.0;
   var fileToShow = "images/question-mark.png";
-  late TextEditingController _controller; //late means promise to initialize it later
-  var _login = TextEditingController();
+  late TextEditingController _usernameController;
+  late TextEditingController _passwordController;
 
+  final EncryptedSharedPreferences prefs = EncryptedSharedPreferences();
 
-  //you're visible
   @override
   void initState() {
     super.initState();
-    _controller = TextEditingController(); //doing your promise to initialize
+    _usernameController = TextEditingController();
+    _passwordController = TextEditingController();
+
+    // Load saved username/password if available
+    Future.delayed(Duration.zero, () async {
+      String? savedUser = await prefs.getString("username");
+      String? savedPass = await prefs.getString("password");
+
+      if (savedUser != null && savedUser.isNotEmpty &&
+          savedPass != null && savedPass.isNotEmpty) {
+        setState(() {
+          _usernameController.text = savedUser;
+          _passwordController.text = savedPass;
+        });
+
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text("Previous login loaded")),
+        );
+      }
+    });
   }
 
-  //you are being removed
   @override
   void dispose() {
+    _usernameController.dispose();
+    _passwordController.dispose();
     super.dispose();
-    //free memory:
-    _controller.dispose();
   }
 
+  // Save username and password
+  Future<void> saveCredentials() async {
+    await prefs.setString("username", _usernameController.text);
+    await prefs.setString("password", _passwordController.text);
+  }
+
+  // Clear saved data
+  Future<void> clearCredentials() async {
+    await prefs.clear();
+  }
+
+  void _onLoginPressed() {
+    // Show AlertDialog
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text("Save Credentials"),
+        content: const Text("Do you want to save your username and password?"),
+        actions: [
+          TextButton(
+            onPressed: () async {
+              await saveCredentials();
+              Navigator.pop(context);
+            },
+            child: const Text("Yes"),
+          ),
+          TextButton(
+            onPressed: () async {
+              await clearCredentials();
+              Navigator.pop(context);
+            },
+            child: const Text("No"),
+          ),
+        ],
+      ),
+    );
+  }
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -62,58 +117,40 @@ class _MyHomePageState extends State<MyHomePage> {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: <Widget>[
-
-
-            Padding(child:
-            TextField(controller: _login, decoration:
-            InputDecoration(
-                border: OutlineInputBorder(),
-                hintText:"Login",
-                labelText: "Login"
-
-            ) ),
-              padding: EdgeInsets.fromLTRB(50, 0, 50, 0)
+            Padding(
+              padding: const EdgeInsets.fromLTRB(50, 0, 50, 10),
+              child: TextField(
+                controller: _usernameController,
+                decoration: const InputDecoration(
+                  border: OutlineInputBorder(),
+                  hintText: "Login",
+                  labelText: "Login",
+                ),
+              ),
             ),
-
-            Padding(child:
-            TextField(controller: _controller, decoration:
-            InputDecoration(
-                border: OutlineInputBorder(),
-                hintText:"Password",
-                labelText: "Password"
-
+            Padding(
+              padding: const EdgeInsets.fromLTRB(50, 0, 50, 20),
+              child: TextField(
+                controller: _passwordController,
+                obscureText: true,
+                decoration: const InputDecoration(
+                  border: OutlineInputBorder(),
+                  hintText: "Password",
+                  labelText: "Password",
+                ),
+              ),
             ),
-                obscureText: true
+            ElevatedButton(
+              onPressed: _onLoginPressed,
+              child: const Text("Login"),
             ),
-                padding: EdgeInsets.fromLTRB(50, 0, 50, 0)
+            const SizedBox(height: 20),
+            Semantics(
+              child: Image.asset(fileToShow, height: 100, width: 100),
             ),
-
-            ElevatedButton(onPressed: () { //paste the text written
-              setState((){
-
-                var txt = _controller.value.text;
-                setState(() {
-                  if(txt == "QWERTY123"){
-                    fileToShow = "images/idea.png";
-                  }
-                  else {
-                    fileToShow = "images/stop.png";
-                  }
-                });
-
-              });
-
-            } //<-- Lambda, or anonymous function
-                , child: Text("Login")),
-
-            Semantics(child: Image.asset(fileToShow, height:100, width:100))
-
-
-
           ],
         ),
       ),
     );
   }
-
-}
+  }
