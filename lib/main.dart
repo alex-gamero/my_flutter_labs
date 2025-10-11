@@ -1,13 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:encrypted_shared_preferences/encrypted_shared_preferences.dart';
 
-import 'data_repository.dart';
-import 'profile_page.dart';
-
-void main() async {
-  WidgetsFlutterBinding.ensureInitialized();
-  // Load repository so ProfilePage can read cached values immediately
-  await DataRepository.instance.init();
+void main() {
   runApp(const MyApp());
 }
 
@@ -17,22 +10,17 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: 'Week5 Lab',
+      title: 'Shopping List',
       theme: ThemeData(
         colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
       ),
-      routes: {
-        '/': (context) => const MyHomePage(title: 'Login Page'),
-        '/profile': (context) => const ProfilePage(),
-      },
-      initialRoute: '/',
+      home: const MyHomePage(title: 'Shopping List'),
     );
   }
 }
 
 class MyHomePage extends StatefulWidget {
   const MyHomePage({super.key, required this.title});
-
   final String title;
 
   @override
@@ -40,94 +28,18 @@ class MyHomePage extends StatefulWidget {
 }
 
 class _MyHomePageState extends State<MyHomePage> {
-  var fileToShow = "images/question-mark.png";
-  late TextEditingController _usernameController;
-  late TextEditingController _passwordController;
+  // Text controllers for input fields
+  final TextEditingController _itemController = TextEditingController();
+  final TextEditingController _quantityController = TextEditingController();
 
-  final EncryptedSharedPreferences prefs = EncryptedSharedPreferences();
-
-  @override
-  void initState() {
-    super.initState();
-    _usernameController = TextEditingController();
-    _passwordController = TextEditingController();
-
-    // Load saved username/password if available
-    Future.delayed(Duration.zero, () async {
-      String? savedUser = await prefs.getString("username");
-      String? savedPass = await prefs.getString("password");
-
-      if (savedUser != null && savedUser.isNotEmpty &&
-          savedPass != null && savedPass.isNotEmpty) {
-        setState(() {
-          _usernameController.text = savedUser;
-          _passwordController.text = savedPass;
-        });
-
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text("Previous login loaded")),
-        );
-      }
-    });
-  }
+  // List of items (each item is a map with name and quantity)
+  final List<Map<String, String>> _shoppingList = [];
 
   @override
   void dispose() {
-    _usernameController.dispose();
-    _passwordController.dispose();
+    _itemController.dispose();
+    _quantityController.dispose();
     super.dispose();
-  }
-
-  // Simple login validator: password must be exactly 'password'
-  void _onLoginPressed() {
-    final username = _usernameController.text.trim();
-    final password = _passwordController.text;
-
-    if (username.isEmpty || password.isEmpty) {
-      showDialog(
-        context: context,
-        builder: (context) => AlertDialog(
-          title: const Text("Missing fields"),
-          content: const Text("Please enter both login and password."),
-          actions: [
-            TextButton(onPressed: () => Navigator.pop(context), child: const Text('OK'))
-          ],
-        ),
-      );
-      return;
-    }
-
-    if (password == 'password') {
-      // Show snackbar with the login name
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Welcome Back $username')),
-      );
-
-      // Navigate to profile and pass the login name as an argument
-      Navigator.pushNamed(context, '/profile', arguments: username);
-    } else {
-      // Invalid credentials
-      showDialog(
-        context: context,
-        builder: (context) => AlertDialog(
-          title: const Text("Invalid credentials"),
-          content: const Text("The password is incorrect. Use 'password' for the lab."),
-          actions: [
-            TextButton(onPressed: () => Navigator.pop(context), child: const Text('OK'))
-          ],
-        ),
-      );
-    }
-  }
-
-  // Save username and password (kept from Week4 example)
-  Future<void> saveCredentials() async {
-    await prefs.setString("username", _usernameController.text);
-    await prefs.setString("password", _passwordController.text);
-  }
-
-  Future<void> clearCredentials() async {
-    await prefs.clear();
   }
 
   @override
@@ -137,75 +49,116 @@ class _MyHomePageState extends State<MyHomePage> {
         backgroundColor: Theme.of(context).colorScheme.inversePrimary,
         title: Text(widget.title),
       ),
-      body: Center(
-        child: SingleChildScrollView(
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: <Widget>[
-              Padding(
-                padding: const EdgeInsets.fromLTRB(50, 0, 50, 10),
+      body: ListPage(),
+    );
+  }
+
+  // Function that builds the page content
+  Widget ListPage() {
+    return Padding(
+      padding: const EdgeInsets.all(16.0),
+      child: Column(
+        children: [
+          // Row with input fields and Add button
+          Row(
+            children: [
+              Expanded(
+                flex: 3,
                 child: TextField(
-                  controller: _usernameController,
+                  controller: _itemController,
                   decoration: const InputDecoration(
+                    labelText: 'Item name',
                     border: OutlineInputBorder(),
-                    hintText: "Login",
-                    labelText: "Login",
                   ),
                 ),
               ),
-              Padding(
-                padding: const EdgeInsets.fromLTRB(50, 0, 50, 20),
+              const SizedBox(width: 8),
+              Expanded(
+                flex: 2,
                 child: TextField(
-                  controller: _passwordController,
-                  obscureText: true,
+                  controller: _quantityController,
+                  keyboardType: TextInputType.number,
                   decoration: const InputDecoration(
+                    labelText: 'Quantity',
                     border: OutlineInputBorder(),
-                    hintText: "Password",
-                    labelText: "Password",
                   ),
                 ),
               ),
+              const SizedBox(width: 8),
               ElevatedButton(
-                onPressed: _onLoginPressed,
-                child: const Text("Login"),
-              ),
-              const SizedBox(height: 20),
-              Semantics(
-                child: Image.asset(fileToShow, height: 100, width: 100),
+                onPressed: () {
+                  final item = _itemController.text.trim();
+                  final quantity = _quantityController.text.trim();
+
+                  if (item.isNotEmpty && quantity.isNotEmpty) {
+                    setState(() {
+                      _shoppingList.add({
+                        'item': item,
+                        'quantity': quantity,
+                      });
+                      _itemController.clear();
+                      _quantityController.clear();
+                    });
+                  }
+                },
+                child: const Text('Add'),
               ),
             ],
           ),
-        ),
-      ),
-      floatingActionButton: FloatingActionButton(
-        onPressed: () async {
-          // small helper to save credentials if user wants to
-          showDialog(
-            context: context,
-            builder: (context) => AlertDialog(
-              title: const Text("Save Credentials"),
-              content: const Text("Do you want to save your username and password?"),
-              actions: [
-                TextButton(
-                  onPressed: () async {
-                    await saveCredentials();
-                    Navigator.pop(context);
+          const SizedBox(height: 20),
+
+          // List of items or empty message
+          Expanded(
+            child: _shoppingList.isEmpty
+                ? const Center(
+              child: Text(
+                'There are no items in the list',
+                style: TextStyle(fontSize: 16, color: Colors.grey),
+              ),
+            )
+                : ListView.builder(
+              itemCount: _shoppingList.length,
+              itemBuilder: (context, index) {
+                final item = _shoppingList[index];
+                return GestureDetector(
+                  onLongPress: () {
+                    // Ask user if they want to delete item
+                    showDialog(
+                      context: context,
+                      builder: (context) => AlertDialog(
+                        title: const Text('Delete Item'),
+                        content: Text(
+                            'Do you want to delete "${item['item']}" from the list?'),
+                        actions: [
+                          TextButton(
+                            onPressed: () {
+                              Navigator.pop(context);
+                            },
+                            child: const Text('No'),
+                          ),
+                          TextButton(
+                            onPressed: () {
+                              setState(() {
+                                _shoppingList.removeAt(index);
+                              });
+                              Navigator.pop(context);
+                            },
+                            child: const Text('Yes'),
+                          ),
+                        ],
+                      ),
+                    );
                   },
-                  child: const Text("Yes"),
-                ),
-                TextButton(
-                  onPressed: () async {
-                    await clearCredentials();
-                    Navigator.pop(context);
-                  },
-                  child: const Text("No"),
-                ),
-              ],
+                  // Text style for each item
+                    child: Text(
+                      '${index + 1}. ${item['item']} — Qty: ${item['quantity']}',
+                      style: const TextStyle(fontSize: 18),
+                    ),
+                );
+              },
             ),
-          );
-        },
-        tooltip: 'Save credentials',
-        child: const Icon(Icons.save),
+          ),
+        ],
       ),
     );
   }
