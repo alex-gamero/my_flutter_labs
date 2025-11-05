@@ -1,87 +1,183 @@
 import 'package:flutter/material.dart';
+import 'ShoppingItem.dart';
+import 'ShoppingDAO.dart';
+import 'ShoppingDatabase.dart';
 
-void main() {
-  runApp(const MyApp());
+void main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+  final database =
+  await $FloorShoppingDatabase.databaseBuilder('shopping.db').build();
+  final dao = database.shoppingDAO;
+
+  runApp(MyApp(dao: dao));
 }
 
 class MyApp extends StatelessWidget {
-  const MyApp({super.key});
+  final ShoppingDAO dao;
+  const MyApp({super.key, required this.dao});
 
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: 'Flutter Demo',
+      title: 'Shopping List',
       theme: ThemeData(
-
         colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
       ),
-      home: const MyHomePage(title: 'Flutter Demo Home Page'),
+      home: MyHomePage(title: 'Shopping List', dao: dao),
     );
   }
 }
 
 class MyHomePage extends StatefulWidget {
-  const MyHomePage({super.key, required this.title});
-
   final String title;
+  final ShoppingDAO dao;
+  const MyHomePage({super.key, required this.title, required this.dao});
 
   @override
   State<MyHomePage> createState() => _MyHomePageState();
 }
 
 class _MyHomePageState extends State<MyHomePage> {
-  double _counter = 0;
-  var myFontSize = 30.0;
+  final TextEditingController _itemController = TextEditingController();
+  final TextEditingController _quantityController = TextEditingController();
+  List<ShoppingItem> _shoppingList = [];
+  int _nextId = 1;
 
-  void _incrementCounter() {
-    if(_counter <= 99.0) {
-      setState(() {
-        _counter++;
-        myFontSize++;
-      });
-    }
+  @override
+  void initState() {
+    super.initState();
+    _loadItems();
+  }
+
+  Future<void> _loadItems() async {
+    final items = await widget.dao.getAllItems();
+    setState(() {
+      _shoppingList = items;
+      if (items.isNotEmpty) {
+        _nextId = items.map((i) => i.id).reduce((a, b) => a > b ? a : b) + 1;
+      }
+    });
+  }
+
+  Future<void> _addItem() async {
+    final name = _itemController.text.trim();
+    final quantityText = _quantityController.text.trim();
+    if (name.isEmpty || quantityText.isEmpty) return;
+
+    final quantity = int.tryParse(quantityText) ?? 1;
+    final newItem = ShoppingItem(_nextId++, name, quantity);
+    await widget.dao.insertItem(newItem);
+    setState(() {
+      _shoppingList.add(newItem);
+    });
+    _itemController.clear();
+    _quantityController.clear();
+  }
+
+  Future<void> _deleteItem(ShoppingItem item) async {
+    await widget.dao.deleteItem(item);
+    setState(() {
+      _shoppingList.remove(item);
+    });
+  }
+
+  @override
+  void dispose() {
+    _itemController.dispose();
+    _quantityController.dispose();
+    super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        backgroundColor: Theme.of(context).colorScheme.inversePrimary,
         title: Text(widget.title),
+        backgroundColor: Theme.of(context).colorScheme.inversePrimary,
       ),
-      body: Center(
+      body: Padding(
+        padding: const EdgeInsets.all(16.0),
         child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: <Widget>[
-
-
-            Text('You have pushed the button this many times:',
-              style: TextStyle(fontSize: myFontSize)
+          children: [
+            Row(
+              children: [
+                Expanded(
+                  flex: 3,
+                  child: TextField(
+                    controller: _itemController,
+                    decoration: const InputDecoration(
+                      labelText: 'Item name',
+                      border: OutlineInputBorder(),
+                    ),
+                  ),
+                ),
+                const SizedBox(width: 8),
+                Expanded(
+                  flex: 2,
+                  child: TextField(
+                    controller: _quantityController,
+                    keyboardType: TextInputType.number,
+                    decoration: const InputDecoration(
+                      labelText: 'Quantity',
+                      border: OutlineInputBorder(),
+                    ),
+                  ),
+                ),
+                const SizedBox(width: 8),
+                ElevatedButton(
+                  onPressed: _addItem,
+                  child: const Text('Add'),
+                ),
+              ],
             ),
-
-
-            Text(
-              '$_counter',
-              style: TextStyle(fontSize: myFontSize),
+            const SizedBox(height: 20),
+            Expanded(
+              child: _shoppingList.isEmpty
+                  ? const Center(
+                child: Text(
+                  'There are no items in the list',
+                  style: TextStyle(fontSize: 16, color: Colors.grey),
+                ),
+              )
+                  : ListView.builder(
+                itemCount: _shoppingList.length,
+                itemBuilder: (context, index) {
+                  final item = _shoppingList[index];
+                  return GestureDetector(
+                    onLongPress: () {
+                      showDialog(
+                        context: context,
+                        builder: (context) => AlertDialog(
+                          title: const Text('Delete Item'),
+                          content: Text(
+                              'Do you want to delete "${item.name}" from the list?'),
+                          actions: [
+                            TextButton(
+                              onPressed: () => Navigator.pop(context),
+                              child: const Text('No'),
+                            ),
+                            TextButton(
+                              onPressed: () {
+                                _deleteItem(item);
+                                Navigator.pop(context);
+                              },
+                              child: const Text('Yes'),
+                            ),
+                          ],
+                        ),
+                      );
+                    },
+                    child: Text(
+                      '${index + 1}. ${item.name} — Qty: ${item.quantity}',
+                      style: const TextStyle(fontSize: 18),
+                    ),
+                  );
+                },
+              ),
             ),
-            Slider(value: _counter, min: 0, max: 100, onChanged: setNewValue)
-
           ],
         ),
       ),
-      floatingActionButton: FloatingActionButton(
-        onPressed: _incrementCounter,
-        tooltip: 'Increment',
-        child: const Icon(Icons.add),
-      ),
     );
   }
-
-  void setNewValue(double num){
-    setState(() {
-      _counter = num;
-      myFontSize = num;
-    });
-  }
-
 }
