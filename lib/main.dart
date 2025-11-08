@@ -43,6 +43,8 @@ class _MyHomePageState extends State<MyHomePage> {
   List<ShoppingItem> _shoppingList = [];
   int _nextId = 1;
 
+  ShoppingItem? _selectedItem; // for Master-Detail selection
+
   @override
   void initState() {
     super.initState();
@@ -78,6 +80,7 @@ class _MyHomePageState extends State<MyHomePage> {
     await widget.dao.deleteItem(item);
     setState(() {
       _shoppingList.remove(item);
+      _selectedItem = null;
     });
   }
 
@@ -95,88 +98,134 @@ class _MyHomePageState extends State<MyHomePage> {
         title: Text(widget.title),
         backgroundColor: Theme.of(context).colorScheme.inversePrimary,
       ),
-      body: Padding(
-        padding: const EdgeInsets.all(16.0),
-        child: Column(
-          children: [
-            Row(
-              children: [
-                Expanded(
-                  flex: 3,
-                  child: TextField(
-                    controller: _itemController,
-                    decoration: const InputDecoration(
-                      labelText: 'Item name',
-                      border: OutlineInputBorder(),
-                    ),
+      body: reactiveLayout(context),
+    );
+  }
+
+  Widget reactiveLayout(BuildContext context) {
+    var size = MediaQuery.of(context).size;
+    var width = size.width;
+    var height = size.height;
+
+    // Tablet/Desktop layout
+    if ((width > height) && (width > 720)) {
+      return Row(
+        children: [
+          Expanded(flex: 2, child: ListPage()),
+          Expanded(flex: 3, child: DetailsPage()),
+        ],
+      );
+    } else {
+      // Phone layout
+      if (_selectedItem == null) {
+        return ListPage();
+      } else {
+        return DetailsPage();
+      }
+    }
+  }
+
+  Widget ListPage() {
+    return Padding(
+      padding: const EdgeInsets.all(16.0),
+      child: Column(
+        children: [
+          Row(
+            children: [
+              Expanded(
+                flex: 3,
+                child: TextField(
+                  controller: _itemController,
+                  decoration: const InputDecoration(
+                    labelText: 'Item name',
+                    border: OutlineInputBorder(),
                   ),
                 ),
-                const SizedBox(width: 8),
-                Expanded(
-                  flex: 2,
-                  child: TextField(
-                    controller: _quantityController,
-                    keyboardType: TextInputType.number,
-                    decoration: const InputDecoration(
-                      labelText: 'Quantity',
-                      border: OutlineInputBorder(),
-                    ),
+              ),
+              const SizedBox(width: 8),
+              Expanded(
+                flex: 2,
+                child: TextField(
+                  controller: _quantityController,
+                  keyboardType: TextInputType.number,
+                  decoration: const InputDecoration(
+                    labelText: 'Quantity',
+                    border: OutlineInputBorder(),
                   ),
                 ),
-                const SizedBox(width: 8),
-                ElevatedButton(
-                  onPressed: _addItem,
-                  child: const Text('Add'),
-                ),
-              ],
-            ),
-            const SizedBox(height: 20),
-            Expanded(
-              child: _shoppingList.isEmpty
-                  ? const Center(
-                child: Text(
-                  'There are no items in the list',
-                  style: TextStyle(fontSize: 16, color: Colors.grey),
-                ),
-              )
-                  : ListView.builder(
-                itemCount: _shoppingList.length,
-                itemBuilder: (context, index) {
-                  final item = _shoppingList[index];
-                  return GestureDetector(
-                    onLongPress: () {
-                      showDialog(
-                        context: context,
-                        builder: (context) => AlertDialog(
-                          title: const Text('Delete Item'),
-                          content: Text(
-                              'Do you want to delete "${item.name}" from the list?'),
-                          actions: [
-                            TextButton(
-                              onPressed: () => Navigator.pop(context),
-                              child: const Text('No'),
-                            ),
-                            TextButton(
-                              onPressed: () {
-                                _deleteItem(item);
-                                Navigator.pop(context);
-                              },
-                              child: const Text('Yes'),
-                            ),
-                          ],
-                        ),
-                      );
-                    },
+              ),
+              const SizedBox(width: 8),
+              ElevatedButton(onPressed: _addItem, child: const Text('Add')),
+            ],
+          ),
+          const SizedBox(height: 20),
+          Expanded(
+            child: _shoppingList.isEmpty
+                ? const Center(
+              child: Text(
+                'There are no items in the list',
+                style: TextStyle(fontSize: 16, color: Colors.grey),
+              ),
+            )
+                : ListView.builder(
+              itemCount: _shoppingList.length,
+              itemBuilder: (context, index) {
+                final item = _shoppingList[index];
+                return GestureDetector(
+                  onTap: () {
+                    setState(() {
+                      _selectedItem = item;
+                    });
+                  },
+                  child: Padding(
+                    padding: const EdgeInsets.symmetric(vertical: 6.0),
                     child: Text(
                       '${index + 1}. ${item.name} — Qty: ${item.quantity}',
                       style: const TextStyle(fontSize: 18),
                     ),
-                  );
-                },
-              ),
+                  ),
+                );
+              },
             ),
-          ],
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget DetailsPage() {
+    if (_selectedItem == null) {
+      return const Center(
+        child: Text(
+          'Select an item to view details',
+          style: TextStyle(fontSize: 20),
         ),
+      );
+    }
+
+    return Center(
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Text('ID: ${_selectedItem!.id}', style: const TextStyle(fontSize: 24)),
+          Text('Name: ${_selectedItem!.name}', style: const TextStyle(fontSize: 24)),
+          Text('Quantity: ${_selectedItem!.quantity}',
+              style: const TextStyle(fontSize: 24)),
+          const SizedBox(height: 30),
+          OutlinedButton(
+            onPressed: () => _deleteItem(_selectedItem!),
+            child: const Text('Delete'),
+          ),
+          const SizedBox(height: 10),
+          OutlinedButton(
+            onPressed: () {
+              setState(() {
+                _selectedItem = null;
+              });
+            },
+            child: const Text('Close'),
+          ),
+        ],
       ),
     );
   }
